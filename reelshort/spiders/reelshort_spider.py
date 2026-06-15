@@ -8,7 +8,7 @@ from reelshort.repository import get_scraped_urls
 class ReelshortSpider(scrapy.Spider):
     name = "reelshort"
     allowed_domains = ["reelshort.com"]
-    start_url_template = "https://reelshort.com/movie-genres/all-movies/{page}"
+    start_url_template = "https://www.reelshort.com/movie-genres/all-movies/{page}"
 
     async def start(self):
         yield scrapy.Request(self.start_url_template.format(page=1), callback=self.parse_first_listing)
