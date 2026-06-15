@@ -11,7 +11,7 @@ class SQLitePipeline:
     def close_spider(self):
         self.session.close()
 
-    def process_item(self, item, spider):
+    def process_item(self, item):
         row = self.session.execute(
             select(Series).where(Series.series_url == item["series_url"])
         ).scalar_one_or_none()
