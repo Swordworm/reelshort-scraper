@@ -7,7 +7,7 @@ from reelshort.repository import get_scraped_urls
 
 class ReelshortSpider(scrapy.Spider):
     name = "reelshort"
-    allowed_domains = ["reelshort.com"]
+    allowed_domains = ["reelshort.com", "www.reelshort.com"]
     start_url_template = "https://www.reelshort.com/movie-genres/all-movies/{page}"
 
     async def start(self):
