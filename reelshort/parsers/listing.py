@@ -1,10 +1,6 @@
 import json
-import re
 from urllib.parse import urlparse, parse_qs, unquote
 from reelshort.items import SeriesItem
-
-BASE_URL = "https://reelshort.com"
-
 
 def _decode_next_image(url: str) -> str:
     if "/_next/image" in url:
@@ -14,14 +10,22 @@ def _decode_next_image(url: str) -> str:
     return url
 
 
-def _slugify(text: str) -> str:
-    return re.sub(r"-{2,}", "-", re.sub(r"[^a-z0-9-]", "", text.lower().replace(" ", "-"))).strip("-")
-
-
 class ListingParser:
+    BASE_URL = "https://www.reelshort.com"
+
     def __init__(self, response):
         self.response = response
         self._data = self._load_next_data()
+        self._url_map = self._build_url_map()
+
+    def _build_url_map(self) -> dict[str, str]:
+        url_map = {}
+        for href in self.response.css("a[href*='/movie/']::attr(href)").getall():
+            book_id = href.rstrip("/").split("-")[-1]
+            if len(book_id) == 24:
+                full = self.BASE_URL + href if not href.startswith("http") else href
+                url_map[book_id] = full
+        return url_map
 
     def _load_next_data(self):
         raw = self.response.css("script#__NEXT_DATA__::text").get()
@@ -49,16 +53,14 @@ class ListingParser:
         items = []
         for m in books:
             book_id = m.get("book_id") or m.get("_id", "")
-            title = m.get("book_title", "")
-            slug = _slugify(title)
-            url = f"{BASE_URL}/movie/{slug}-{book_id}" if book_id else ""
+            url = self._url_map.get(book_id, "")
 
             tags_raw = m.get("tag_lang") or []
             tags = ",".join(t.get("ori_name", "") for t in tags_raw if t.get("ori_name"))
 
             items.append(SeriesItem(
                 series_url=url,
-                series_title=title,
+                series_title=m.get("book_title", ""),
                 cover_image_url=m.get("book_pic", ""),
                 description=m.get("special_desc", ""),
                 genre=str(m.get("book_genre", "")),
@@ -72,7 +74,7 @@ class ListingParser:
         for card in self.response.css("a[href*='/movie/']"):
             href = card.attrib.get("href", "")
             if not href.startswith("http"):
-                href = BASE_URL + href
+                href = self.BASE_URL + href
             title = card.css("h2::text, h3::text, [class*='title']::text").get(default="").strip()
             img = card.css("img::attr(src), img::attr(data-src)").get(default="")
             items.append(SeriesItem(
