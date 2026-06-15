@@ -13,8 +13,10 @@ ITEM_PIPELINES = {"reelshort.pipelines.SQLitePipeline": 300}
 
 EXPORT_CSV_PATH = "reelshort_series.csv"
 EXPORT_CSV_FIELDS = [
-    "series_title", "series_url", "cover_image_url",
-    "description", "genre", "episode_count", "status", "tags",
+    "series_title", "series_url", "cover_image_url", "description",
+    "episode_count", "tags", "book_genre", "book_type", "book_source",
+    "update_status", "read_count", "collect_count",
+    "online_at", "publish_at", "has_dub",
 ]
 
 DEFAULT_REQUEST_HEADERS = {

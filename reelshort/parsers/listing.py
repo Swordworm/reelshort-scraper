@@ -63,9 +63,13 @@ class ListingParser:
                 series_title=m.get("book_title", ""),
                 cover_image_url=m.get("book_pic", ""),
                 description=m.get("special_desc", ""),
-                genre=str(m.get("book_genre", "")),
                 episode_count=str(m.get("chapter_count", "")),
                 tags=tags,
+                book_genre=str(m.get("book_genre", "")),
+                book_type=str(m.get("book_type", "")),
+                book_source=str(m.get("book_source", "")),
+                read_count=str(m.get("read_count", "")),
+                collect_count=str(m.get("collect_count", "")),
             ))
         return items
 

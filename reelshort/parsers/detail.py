@@ -1,8 +1,6 @@
 import json
 from reelshort.items import SeriesItem
 
-_UPDATE_STATUS = {1: "Ongoing", 2: "Completed"}
-
 
 class DetailParser:
     def __init__(self, response):
@@ -21,7 +19,7 @@ class DetailParser:
     def get_item(self) -> SeriesItem:
         if self._data:
             return self._item_from_json()
-        return self._item_from_html()
+        return SeriesItem()
 
     def _item_from_json(self) -> SeriesItem:
         data = self._data
@@ -35,19 +33,16 @@ class DetailParser:
         tag_list = m.get("tag_list") or []
         tags = ",".join(t["text"] for t in tag_list if t.get("text"))
 
-        status_code = m.get("update_status")
-        status = _UPDATE_STATUS.get(status_code, str(status_code) if status_code is not None else "")
-
         return SeriesItem(
             episode_count=str(m.get("total", "")),
-            status=status,
-            genre=str(m.get("book_genre", "")),
             tags=tags,
+            book_genre=str(m.get("book_genre", "")),
+            book_type=str(m.get("book_type", "")),
+            book_source=str(m.get("book_source", "")),
+            update_status=str(m.get("update_status", "")),
+            read_count=str(m.get("read_count", "")),
+            collect_count=str(m.get("collect_count", "")),
+            online_at=str(m.get("online_at", "")),
+            publish_at=str(m.get("publish_at", "")),
+            has_dub=bool(m.get("has_dub", False)),
         )
-
-    def _item_from_html(self) -> SeriesItem:
-        episode_count = self.response.css("[class*='episode']::text, [class*='count']::text").get(default="").strip()
-        status = self.response.css("[class*='status']::text").get(default="").strip()
-        genre = self.response.css("[class*='genre']::text, [class*='category']::text").get(default="").strip()
-        tags = ",".join(t.strip() for t in self.response.css("[class*='tag']::text").getall() if t.strip())
-        return SeriesItem(episode_count=episode_count, status=status, genre=genre, tags=tags)
