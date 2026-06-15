@@ -31,18 +31,19 @@ class DetailParser:
             m = {}
 
         tag_list = m.get("tag_list") or []
-        tags = ",".join(t["text"] for t in tag_list if t.get("text"))
+        tags_parts = [t["text"] for t in tag_list if t.get("text")]
+        tags = ",".join(tags_parts) if tags_parts else None
 
         return SeriesItem(
-            episode_count=str(m.get("total", "")),
+            episode_count=m.get("total"),
             tags=tags,
-            book_genre=str(m.get("book_genre", "")),
-            book_type=str(m.get("book_type", "")),
-            book_source=str(m.get("book_source", "")),
-            update_status=str(m.get("update_status", "")),
-            read_count=str(m.get("read_count", "")),
-            collect_count=str(m.get("collect_count", "")),
-            online_at=str(m.get("online_at", "")),
-            publish_at=str(m.get("publish_at", "")),
-            has_dub=bool(m.get("has_dub", False)),
+            book_genre=m.get("book_genre"),
+            book_type=m.get("book_type"),
+            book_source=m.get("book_source"),
+            update_status=m.get("update_status"),
+            read_count=m.get("read_count"),
+            collect_count=m.get("collect_count"),
+            online_at=m.get("online_at"),
+            publish_at=m.get("publish_at"),
+            has_dub=m.get("has_dub"),
         )

@@ -55,21 +55,11 @@ class ListingParser:
             book_id = m.get("book_id") or m.get("_id", "")
             url = self._url_map.get(book_id, "")
 
-            tags_raw = m.get("tag_lang") or []
-            tags = ",".join(t.get("ori_name", "") for t in tags_raw if t.get("ori_name"))
-
             items.append(SeriesItem(
                 series_url=url,
-                series_title=m.get("book_title", ""),
-                cover_image_url=m.get("book_pic", ""),
-                description=m.get("special_desc", ""),
-                episode_count=str(m.get("chapter_count", "")),
-                tags=tags,
-                book_genre=str(m.get("book_genre", "")),
-                book_type=str(m.get("book_type", "")),
-                book_source=str(m.get("book_source", "")),
-                read_count=str(m.get("read_count", "")),
-                collect_count=str(m.get("collect_count", "")),
+                series_title=m.get("book_title"),
+                cover_image_url=m.get("book_pic"),
+                description=m.get("special_desc"),
             ))
         return items
 
