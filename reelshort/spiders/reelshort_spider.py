@@ -10,7 +10,7 @@ class ReelshortSpider(scrapy.Spider):
     allowed_domains = ["reelshort.com"]
     start_url_template = "https://reelshort.com/movie-genres/all-movies/{page}"
 
-    def start_requests(self):
+    async def start(self):
         yield scrapy.Request(self.start_url_template.format(page=1), callback=self.parse_first_listing)
 
     def parse_first_listing(self, response):
