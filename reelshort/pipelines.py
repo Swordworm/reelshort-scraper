@@ -4,11 +4,11 @@ from reelshort.models import Series
 
 
 class SQLitePipeline:
-    def open_spider(self, spider):
+    def open_spider(self):
         init_db()
         self.session = get_session()
 
-    def close_spider(self, spider):
+    def close_spider(self):
         self.session.close()
 
     def process_item(self, item, spider):
