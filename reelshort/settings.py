@@ -2,7 +2,7 @@ BOT_NAME = "reelshort"
 SPIDER_MODULES = ["reelshort.spiders"]
 NEWSPIDER_MODULE = "reelshort.spiders"
 
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 CONCURRENT_REQUESTS = 4
 DOWNLOAD_DELAY = 1.0
 AUTOTHROTTLE_ENABLED = True
