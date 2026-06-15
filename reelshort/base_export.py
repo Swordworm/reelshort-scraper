@@ -1,11 +1,11 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from scrapy.commands import ScrapyCommand
 from sqlalchemy import select
 from reelshort.database import init_db, get_session
 from reelshort.models import Series
 
 
-class BaseExportCommand(ScrapyCommand):
+class BaseExportCommand(ScrapyCommand, ABC):
     requires_project = True
 
     @abstractmethod
