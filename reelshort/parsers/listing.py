@@ -1,15 +1,21 @@
 import json
+import re
 from urllib.parse import urlparse, parse_qs, unquote
 from reelshort.items import SeriesItem
 
+BASE_URL = "https://reelshort.com"
+
 
 def _decode_next_image(url: str) -> str:
-    """Strip Next.js CDN wrapper: /_next/image?url=<encoded> → original URL."""
     if "/_next/image" in url:
         qs = parse_qs(urlparse(url).query)
         if "url" in qs:
             return unquote(qs["url"][0])
     return url
+
+
+def _slugify(text: str) -> str:
+    return re.sub(r"-{2,}", "-", re.sub(r"[^a-z0-9-]", "", text.lower().replace(" ", "-"))).strip("-")
 
 
 class ListingParser:
@@ -32,67 +38,63 @@ class ListingParser:
         return self._items_from_html()
 
     def _items_from_json(self) -> list:
-        # TODO: adjust path once real JSON structure is known
+        data = self._data
+        if data is None:
+            return []
         try:
-            page_props = self._data["props"]["pageProps"]
-            movies = (
-                page_props.get("movieList")
-                or page_props.get("movies")
-                or page_props.get("data", {}).get("list")
-                or []
-            )
+            books = data["props"]["pageProps"]["tagBooks"]["books"]
         except (KeyError, TypeError):
-            movies = []
+            books = []
 
         items = []
-        for m in movies:
-            url = m.get("url") or m.get("slug") or m.get("id") or ""
-            if url and not url.startswith("http"):
-                url = "https://reelshort.com" + (url if url.startswith("/") else f"/movie/{url}")
-            item = SeriesItem(
+        for m in books:
+            book_id = m.get("book_id") or m.get("_id", "")
+            title = m.get("book_title", "")
+            slug = _slugify(title)
+            url = f"{BASE_URL}/movie/{slug}-{book_id}" if book_id else ""
+
+            tags_raw = m.get("tag_lang") or []
+            tags = ",".join(t.get("ori_name", "") for t in tags_raw if t.get("ori_name"))
+
+            items.append(SeriesItem(
                 series_url=url,
-                series_title=m.get("title") or m.get("name") or "",
-                cover_image_url=_decode_next_image(m.get("cover") or m.get("coverUrl") or m.get("img") or ""),
-                description=m.get("description") or m.get("intro") or "",
-                genre=m.get("genre") or m.get("category") or "",
-            )
-            items.append(item)
+                series_title=title,
+                cover_image_url=m.get("book_pic", ""),
+                description=m.get("special_desc", ""),
+                genre=str(m.get("book_genre", "")),
+                episode_count=str(m.get("chapter_count", "")),
+                tags=tags,
+            ))
         return items
 
     def _items_from_html(self) -> list:
         items = []
-        # TODO: tune selector after inspecting rendered HTML
         for card in self.response.css("a[href*='/movie/']"):
             href = card.attrib.get("href", "")
             if not href.startswith("http"):
-                href = "https://reelshort.com" + href
+                href = BASE_URL + href
             title = card.css("h2::text, h3::text, [class*='title']::text").get(default="").strip()
             img = card.css("img::attr(src), img::attr(data-src)").get(default="")
-            item = SeriesItem(
+            items.append(SeriesItem(
                 series_url=href,
                 series_title=title,
                 cover_image_url=_decode_next_image(img),
                 description="",
                 genre="",
-            )
-            items.append(item)
+                episode_count="",
+                tags="",
+            ))
         return items
 
     def get_total_pages(self) -> int:
         if self._data:
             try:
-                page_props = self._data["props"]["pageProps"]
-                total = (
-                    page_props.get("totalPage")
-                    or page_props.get("total_pages")
-                    or page_props.get("data", {}).get("totalPage")
-                )
+                total = self._data["props"]["pageProps"]["totalPage"]
                 if total:
                     return int(total)
             except (KeyError, TypeError, ValueError):
                 pass
 
-        # fallback: parse highest page number from pagination links
         nums = self.response.css("a[href*='/all-movies/']::attr(href)").getall()
         pages = []
         for href in nums:
