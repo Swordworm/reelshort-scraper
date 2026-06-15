@@ -1,5 +1,5 @@
 import csv
-from reelshort.base_export import BaseExportCommand
+from reelshort.export.base import BaseExportCommand
 
 
 class Command(BaseExportCommand):
