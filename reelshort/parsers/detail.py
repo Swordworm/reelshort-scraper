@@ -6,6 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class DetailParser:
+    PLACEHOLDER_TAGS = {"Playing Dumb"}
+
     def __init__(self, response):
         self.response = response
         self._data = self._load_next_data()
@@ -35,8 +37,17 @@ class DetailParser:
             logger.warning("Unexpected __NEXT_DATA__ structure on %s", self.response.url)
             m = {}
 
-        tag_list = m.get("tag_list") or []
-        tags_parts = [t["text"] for t in tag_list if t.get("text")]
+        seen = set()
+        tags_parts = []
+        for t in (m.get("tag_list") or []):
+            text = t.get("text") if isinstance(t, dict) else None
+            if text and text not in seen:
+                seen.add(text)
+                tags_parts.append(text)
+        for text in (m.get("tag") or []):
+            if isinstance(text, str) and text not in self.PLACEHOLDER_TAGS and text not in seen:
+                seen.add(text)
+                tags_parts.append(text)
         tags = ",".join(tags_parts) if tags_parts else None
 
         return SeriesItem(
