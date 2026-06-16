@@ -13,7 +13,7 @@ RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 DOWNLOAD_TIMEOUT = 180
 
 LOG_DIR = "logs"
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
 
 COMMANDS_MODULE = "reelshort.commands"
 EXTENSIONS = {"reelshort.extensions.FileLogging": 1}
