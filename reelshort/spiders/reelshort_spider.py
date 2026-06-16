@@ -15,12 +15,13 @@ class ReelshortSpider(scrapy.Spider):
 
     def parse_first_listing(self, response):
         parser = ListingParser(response)
-        total = parser.get_total_pages()
-        self.logger.info(f"Total listing pages: {total}")
+        total_pages = parser.get_total_pages()
+        total_items = parser.get_total_items()
+        self.logger.info("Total listing pages: %d, total items: %s", total_pages, total_items)
 
         yield from self._process_listing(parser)
 
-        for page in range(2, total + 1):
+        for page in range(2, total_pages + 1):
             yield scrapy.Request(self.start_url_template.format(page=page), callback=self.parse_listing)
 
     def parse_listing(self, response):
@@ -28,12 +29,24 @@ class ReelshortSpider(scrapy.Spider):
 
     def _process_listing(self, parser: ListingParser):
         scraped_urls = get_scraped_urls()
+        stubs = parser.get_items()
 
-        for stub in parser.get_items():
+        no_url = already_scraped = yielded = 0
+        for stub in stubs:
             url = stub.get("series_url", "")
-            if not url or url in scraped_urls:
+            if not url:
+                no_url += 1
                 continue
+            if url in scraped_urls:
+                already_scraped += 1
+                continue
+            yielded += 1
             yield scrapy.Request(url, callback=self.parse_detail, cb_kwargs={"stub": stub})
+
+        self.logger.info(
+            "%s: %d items — yielded=%d, no_url=%d, already_scraped=%d",
+            parser.response.url, len(stubs), yielded, no_url, already_scraped,
+        )
 
     def parse_detail(self, response, stub: SeriesItem):
         detail = DetailParser(response).get_item()

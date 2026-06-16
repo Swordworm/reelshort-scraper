@@ -8,7 +8,15 @@ DOWNLOAD_DELAY = 0.5
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_TARGET_CONCURRENCY = 8.0
 
+RETRY_TIMES = 2
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
+DOWNLOAD_TIMEOUT = 180
+
+LOG_DIR = "logs"
+LOG_LEVEL = "INFO"
+
 COMMANDS_MODULE = "reelshort.commands"
+EXTENSIONS = {"reelshort.extensions.FileLogging": 1}
 ITEM_PIPELINES = {"reelshort.pipelines.SQLitePipeline": 300}
 
 EXPORT_CSV_PATH = "reelshort_series.csv"

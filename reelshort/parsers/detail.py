@@ -1,5 +1,8 @@
 import json
+import logging
 from reelshort.items import SeriesItem
+
+logger = logging.getLogger(__name__)
 
 
 class DetailParser:
@@ -12,13 +15,14 @@ class DetailParser:
         if raw:
             try:
                 return json.loads(raw)
-            except json.JSONDecodeError:
-                pass
+            except json.JSONDecodeError as e:
+                logger.error("JSON decode failed on %s: %s", self.response.url, e)
         return None
 
     def get_item(self) -> SeriesItem:
         if self._data:
             return self._item_from_json()
+        logger.warning("No __NEXT_DATA__ on %s, returning empty item", self.response.url)
         return SeriesItem()
 
     def _item_from_json(self) -> SeriesItem:
@@ -28,6 +32,7 @@ class DetailParser:
         try:
             m = data["props"]["pageProps"]["data"]
         except (KeyError, TypeError):
+            logger.warning("Unexpected __NEXT_DATA__ structure on %s", self.response.url)
             m = {}
 
         tag_list = m.get("tag_list") or []
