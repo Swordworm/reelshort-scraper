@@ -1,1 +1,1 @@
-from reelshort.repository.series import get_scraped_urls
+from reelshort.repository.series import get_unscraped_series

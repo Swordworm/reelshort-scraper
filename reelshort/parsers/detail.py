@@ -1,6 +1,6 @@
 import json
 import logging
-from reelshort.items import SeriesItem
+from reelshort.items import SeriesDetailItem
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +21,16 @@ class DetailParser:
                 logger.error("JSON decode failed on %s: %s", self.response.url, e)
         return None
 
-    def get_item(self) -> SeriesItem:
+    def get_item(self) -> SeriesDetailItem:
         if self._data:
             return self._item_from_json()
         logger.warning("No __NEXT_DATA__ on %s, returning empty item", self.response.url)
-        return SeriesItem()
+        return SeriesDetailItem()
 
-    def _item_from_json(self) -> SeriesItem:
+    def _item_from_json(self) -> SeriesDetailItem:
         data = self._data
         if data is None:
-            return SeriesItem()
+            return SeriesDetailItem()
         try:
             m = data["props"]["pageProps"]["data"]
         except (KeyError, TypeError):
@@ -50,7 +50,11 @@ class DetailParser:
                 tags_parts.append(text)
         tags = ",".join(tags_parts) if tags_parts else None
 
-        return SeriesItem(
+        return SeriesDetailItem(
+            series_url=self.response.url,
+            series_title=m.get("book_title"),
+            cover_image_url=m.get("book_pic"),
+            description=m.get("special_desc"),
             episode_count=m.get("total"),
             tags=tags,
             book_genre=m.get("book_genre"),

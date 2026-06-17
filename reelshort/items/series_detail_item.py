@@ -1,7 +1,8 @@
 import scrapy
 
 
-class SeriesItem(scrapy.Item):
+class SeriesDetailItem(scrapy.Item):
+    series_id = scrapy.Field()
     series_url = scrapy.Field()
     series_title = scrapy.Field()
     cover_image_url = scrapy.Field()
@@ -17,3 +18,4 @@ class SeriesItem(scrapy.Item):
     online_at = scrapy.Field()
     publish_at = scrapy.Field()
     has_dub = scrapy.Field()
+    exception = scrapy.Field()

@@ -1,7 +1,6 @@
 import json
 import logging
 from urllib.parse import urlparse, parse_qs, unquote
-from reelshort.items import SeriesItem
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +38,13 @@ class ListingParser:
                 logger.error("JSON decode failed on %s: %s", self.response.url, e)
         return None
 
-    def get_items(self) -> list:
+    def get_items(self) -> list[str]:
         if self._data:
             return self._items_from_json()
         logger.warning("No __NEXT_DATA__ on %s, falling back to HTML", self.response.url)
         return self._items_from_html()
 
-    def _items_from_json(self) -> list:
+    def _items_from_json(self) -> list[str]:
         data = self._data
         if data is None:
             return []
@@ -54,46 +53,30 @@ class ListingParser:
         except (KeyError, TypeError):
             books = []
 
-        items = []
+        urls = []
         missing = []
         for m in books:
             book_id = m.get("book_id") or m.get("_id", "")
             url = self._url_map.get(book_id, "")
             if not url:
                 missing.append(book_id)
-
-            items.append(SeriesItem(
-                series_url=url,
-                series_title=m.get("book_title"),
-                cover_image_url=m.get("book_pic"),
-                description=m.get("special_desc"),
-            ))
+            else:
+                urls.append(url)
 
         if missing:
             logger.warning(
                 "%s: %d/%d items have no URL in HTML map (book_ids: %s)",
-                self.response.url, len(missing), len(items), missing,
+                self.response.url, len(missing), len(urls) + len(missing), missing,
             )
-        return items
+        return urls
 
-    def _items_from_html(self) -> list:
-        items = []
-        for card in self.response.css("a[href*='/movie/']"):
-            href = card.attrib.get("href", "")
+    def _items_from_html(self) -> list[str]:
+        urls = []
+        for href in self.response.css("a[href*='/movie/']::attr(href)").getall():
             if not href.startswith("http"):
                 href = self.BASE_URL + href
-            title = card.css("h2::text, h3::text, [class*='title']::text").get(default="").strip()
-            img = card.css("img::attr(src), img::attr(data-src)").get(default="")
-            items.append(SeriesItem(
-                series_url=href,
-                series_title=title,
-                cover_image_url=_decode_next_image(img),
-                description="",
-                genre="",
-                episode_count="",
-                tags="",
-            ))
-        return items
+            urls.append(href)
+        return urls
 
     def get_total_pages(self) -> int:
         if self._data:

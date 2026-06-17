@@ -3,10 +3,9 @@ from reelshort.database import get_session
 from reelshort.models import Series
 
 
-def get_scraped_urls() -> set[str]:
+def get_unscraped_series() -> list[tuple[int, str]]:
     with get_session() as session:
-        return set(
-            session.execute(
-                select(Series.series_url).where(Series.detail_scraped.is_(True))
-            ).scalars().all()
-        )
+        rows = session.execute(
+            select(Series.id, Series.series_url).where(Series.scraped_at.is_(None))
+        ).all()
+        return [(row.id, row.series_url) for row in rows]

@@ -17,7 +17,10 @@ LOG_LEVEL = "DEBUG"
 
 COMMANDS_MODULE = "reelshort.commands"
 EXTENSIONS = {"reelshort.extensions.FileLogging": 1}
-ITEM_PIPELINES = {"reelshort.pipelines.SQLitePipeline": 300}
+ITEM_PIPELINES = {
+    "reelshort.pipelines.listing_pipeline.ListingPipeline": 100,
+    "reelshort.pipelines.series_pipeline.SeriesPipeline": 200,
+}
 
 EXPORT_CSV_PATH = "reelshort_series.csv"
 EXPORT_CSV_FIELDS = [

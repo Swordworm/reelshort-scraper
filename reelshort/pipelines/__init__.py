@@ -1,1 +1,2 @@
-from reelshort.pipelines.sqlite import SQLitePipeline
+from reelshort.pipelines.listing_pipeline import ListingPipeline
+from reelshort.pipelines.series_pipeline import SeriesPipeline
