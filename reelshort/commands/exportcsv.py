@@ -15,4 +15,4 @@ class Command(BaseExportCommand):
             writer.writeheader()
             for row in rows:
                 writer.writerow({f: getattr(row, f) or "" for f in fields})
-        print(f"Exported {len(rows)} series → {path}")
+        print(f"Exported {len(rows)} series -> {path}")
